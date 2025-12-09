@@ -10,6 +10,22 @@ class HashMap
     @buckets = Array.new(@capacity)
     @load_factor = (@storage_count / @buckets.size) # if load factor is =>0.75 array capacity will double reducing the LF
   end
+
+  def hash(key)
+    hash_code = 0
+    prime_number = 31
+
+    key.each_char { |char| hash_code = prime_number * hash_code + char.ord }
+    hash_code % @buckets.size
+  end
+
+  def set(key, value)
+    new_node = Node.new(key, value)
+    index = hash(new_node.key)
+    p index
+  end
 end
 
 test = HashMap.new
+
+test.set('apple', 'red')
