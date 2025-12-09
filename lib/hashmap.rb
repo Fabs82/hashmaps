@@ -6,7 +6,7 @@ class HashMap
 
   def initialize
     @capacity = 16.0 # starting dimension of the HM
-    @storage_count = 12.0 # the storage count will increase each time a new Node is added to the HM
+    @storage_count = 0.0 # the storage count will increase each time a new Node is added to the HM
     @buckets = Array.new(@capacity)
     @load_factor = (@storage_count / @buckets.size) # if load factor is =>0.75 array capacity will double reducing the LF
   end
@@ -20,9 +20,16 @@ class HashMap
   end
 
   def set(key, value)
+    # add a key/value pair to the corresponding hashed index of the array
     new_node = Node.new(key, value)
     index = hash(new_node.key)
-    p index
+
+    raise IndexError if index.negative? || index >= @buckets.length
+
+    return puts 'Index is not empty' unless @buckets[index].nil?
+
+    @buckets[index] = new_node
+    @storage_count += 1
   end
 end
 
