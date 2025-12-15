@@ -72,6 +72,26 @@ class HashMap
     @buckets = Array.new(16)
     @storage_count = 0
   end
+
+  def keys
+    # returns an array containing all the keys inside the hash map.
+    keys_array = []
+    @buckets.each_index do |index|
+      current_node = @buckets[index]
+      unless current_node.nil? # rubocop:disable Style/Next
+        while current_node
+          key_array.append(current_node.key)
+          current_node = current_node.next_node
+        end
+      end
+    end
+    keys_array
+    # loop orizontally bx index number
+    # if the node at index number not nil/empty
+    # loop vertically to check the linked lists
+    # append all key to an array
+    # return the array
+  end
 end
 
 test = HashMap.new
@@ -89,4 +109,4 @@ test.set('jacket', 'blue')
 test.set('kite', 'pink')
 test.set('lion', 'golden')
 
-p test.buckets
+p test.keys
