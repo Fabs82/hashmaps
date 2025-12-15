@@ -91,6 +91,20 @@ class HashMap
     # append all key to an array
     # return the array
   end
+
+  def values
+    # returns an array containing all values
+    values_array = []
+    @buckets.each do |current_node|
+      next if current_node.nil?
+
+      while current_node
+        values_array << current_node.value
+        current_node = current_node.next_node
+      end
+    end
+    values_array
+  end
 end
 
 test = HashMap.new
@@ -109,3 +123,4 @@ test.set('kite', 'pink')
 test.set('lion', 'golden')
 
 p test.keys
+p test.values
