@@ -75,16 +75,9 @@ class HashMap
 
   def keys
     # returns an array containing all the keys inside the hash map.
-    keys_array = []
-    @buckets.each do |current_node|
-      next if current_node.nil?
-
-      while current_node
-        keys_array << current_node.key
-        current_node = current_node.next_node
-      end
+    collect_from_nodes do |node|
+      node.key
     end
-    keys_array
     # loop orizontally bx index number
     # if the node at index number not nil/empty
     # loop vertically to check the linked lists
@@ -94,16 +87,28 @@ class HashMap
 
   def values
     # returns an array containing all values
-    values_array = []
+    collect_from_nodes do |node|
+      node.value
+    end
+  end
+
+  def entries
+    collect_from_nodes do |node|
+      [node.key, node.value]
+    end
+  end
+
+  def collect_from_nodes
+    array = []
     @buckets.each do |current_node|
       next if current_node.nil?
 
       while current_node
-        values_array << current_node.value
+        array << yield(current_node)
         current_node = current_node.next_node
       end
     end
-    values_array
+    array
   end
 end
 
@@ -123,4 +128,3 @@ test.set('kite', 'pink')
 test.set('lion', 'golden')
 
 p test.keys
-p test.values
