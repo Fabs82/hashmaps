@@ -2,14 +2,13 @@ require_relative 'node'
 
 # Class representing the full implementation of an HashMap
 class HashMap
-  attr_reader :capacity, :buckets, :storage_count
+  attr_accessor :capacity, :buckets, :storage_count, :threshold
 
   def initialize
     @capacity = 16 # starting dimension of the HashMap
     @buckets = Array.new(@capacity)
     @load_factor = 0.75 # determine when it is a goog time to grow the array capacity
-    @threshold = @capacity * @load_factor # if storage_count > threshold -> increase buckets number
-    @storage_count = 0
+    @storage_count = 0  # if storage_count > threshold (@capacity * @load_factor) -> increase buckets number
   end
 
   def hash(key)
@@ -21,8 +20,25 @@ class HashMap
   end
 
   def grow_array
+    @capacity *= 2
+    old_buckets = @buckets
+    @buckets = Array.new(@capacity)
+    puts 'time to grow'
+    old_buckets.each do |current_node|
+      next if current_node.nil?
+
+      while current_node
+        next_node_to_process = current_node.next_node
+        index = hash(current_node.key)
+        current_node.next_node = @buckets[index]
+        @buckets[index] = current_node
+        current_node = next_node_to_process
+      end
+    end
+    # the hashmap grows in the SET() method
+    # # if storage_count > threshold -> increase buckets number
     # create a new array with double the capacity
-    # copy all existing nodes to the buckets of the new array hashing their keys
+    # copy all existing nodes to the buckets of the new array re-hashing their keys
   end
 
   def set(key, value)
@@ -43,6 +59,9 @@ class HashMap
     new_node.next_node = @buckets[index]
     @buckets[index] = new_node
     @storage_count += 1
+    # grow array if storage_count > threshold -> increase buckets number
+    threshold = @capacity * @load_factor
+    grow_array if @storage_count > threshold
   end
 
   def get(key)
@@ -68,6 +87,28 @@ class HashMap
     false
   end
 
+  def remove(key)
+    index = hash(key)
+    current_node = @buckets[index]
+    previous_node = nil
+
+    return nil if current_node.nil? # return nil if index is empty
+
+    while current_node
+      if current_node.key == key # check the key
+        if previous_node.nil? # check if it is the first element in the bucket
+          @buckets[index] = current_node.next_node
+        else
+          previous_node.next_node = current_node.next_node # move the pointer and jump the current_node removing it
+        end
+        @storage_count -= 1 # decrease the count to correctly calculate the threshold
+        return current_node.value # break out of the loop
+      end
+      previous_node = current_node # if still in the loop move to the next nodes couple
+      current_node = current_node.next_node
+    end
+  end
+
   def clear
     @buckets = Array.new(16)
     @storage_count = 0
@@ -75,28 +116,22 @@ class HashMap
 
   def keys
     # returns an array containing all the keys inside the hash map.
-    collect_from_nodes do |node|
-      node.key
-    end
-    # loop orizontally bx index number
-    # if the node at index number not nil/empty
-    # loop vertically to check the linked lists
-    # append all key to an array
-    # return the array
+    collect_from_nodes { |current_node| current_node.key }
   end
 
   def values
     # returns an array containing all values
-    collect_from_nodes do |node|
-      node.value
-    end
+    collect_from_nodes { |current_node| current_node.value }
   end
 
   def entries
-    collect_from_nodes do |node|
-      [node.key, node.value]
+    # returns an array containing all keys & values
+    collect_from_nodes do |current_node|
+      [current_node.key, current_node.value]
     end
   end
+
+  private
 
   def collect_from_nodes
     array = []
@@ -110,6 +145,12 @@ class HashMap
     end
     array
   end
+  # loop orizontally bx index number
+  # if the node at index number not nil/empty
+  # loop vertically to check the linked lists
+  # append all the selected value to an array
+  # yield delegates the extraction of the corrected data to the method caller.
+  # return the array
 end
 
 test = HashMap.new
@@ -127,4 +168,6 @@ test.set('jacket', 'blue')
 test.set('kite', 'pink')
 test.set('lion', 'golden')
 
-p test.keys
+test.set('moon', 'silver')
+
+p test.buckets
